@@ -6,37 +6,101 @@
 <title>BrandStar — Claude Usage</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
-  :root{--bg:#0f1117;--card:#1a1d2e;--card2:#12152a;--border:#2a2d3e;--text:#e2e8f0;--muted:#8892a4;--accent:#6366f1;--green:#10b981;--amber:#f59e0b;--red:#ef4444}
+  :root{
+    --bg:#f0f2f7;
+    --card:#ffffff;
+    --card2:#f8f9fc;
+    --border:#e2e6ef;
+    --text:#1a1f36;
+    --muted:#6b7280;
+    --accent:#4f46e5;
+    --accent-light:#eef2ff;
+    --green:#059669;
+    --green-light:#ecfdf5;
+    --amber:#d97706;
+    --amber-light:#fffbeb;
+    --red:#dc2626;
+  }
   *{box-sizing:border-box;margin:0;padding:0}
-  body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;min-height:100vh}
-  header{padding:20px 28px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px}
-  header h1{font-size:1.15rem;font-weight:700}
-  .sub{color:var(--muted);font-size:0.8rem;margin-top:3px}
-  .btn{background:var(--accent);color:#fff;border:none;padding:8px 18px;border-radius:6px;font-size:0.82rem;font-weight:600;cursor:pointer;transition:opacity .2s}
-  .btn:hover{opacity:.85}
-  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;padding:20px 28px 0}
-  .stat{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:18px 20px}
-  .stat .lbl{color:var(--muted);font-size:.7rem;text-transform:uppercase;letter-spacing:.05em}
-  .stat .val{font-size:1.8rem;font-weight:700;margin-top:5px;line-height:1}
-  .stat .hint{font-size:.75rem;color:var(--muted);margin-top:5px}
-  .charts{display:grid;grid-template-columns:2fr 1fr;gap:14px;padding:14px 28px}
-  .chart-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:18px 20px}
-  .chart-card h2{font-size:.85rem;font-weight:600;margin-bottom:14px}
-  .table-section{padding:0 28px 28px}
-  .table-section h2{font-size:.85rem;font-weight:600;margin-bottom:10px}
-  table{width:100%;border-collapse:collapse;background:var(--card);border:1px solid var(--border);border-radius:10px;overflow:hidden}
-  th{background:var(--card2);padding:11px 16px;text-align:left;font-size:.7rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);white-space:nowrap}
-  td{padding:11px 16px;border-top:1px solid var(--border);font-size:.84rem;vertical-align:middle}
-  tr:hover td{background:#1e2235}
+  body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;min-height:100vh;font-size:14px}
+
+  /* Header */
+  header{background:#fff;padding:16px 32px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+  .header-left{display:flex;align-items:center;gap:12px}
+  .logo{font-size:1.2rem;font-weight:800;color:var(--text)}
+  .logo span{color:var(--accent)}
+  .badge{background:var(--accent-light);color:var(--accent);font-size:.68rem;font-weight:700;padding:3px 8px;border-radius:20px;letter-spacing:.03em}
+  .sub{color:var(--muted);font-size:.78rem;margin-top:2px}
+  .btn{background:var(--accent);color:#fff;border:none;padding:9px 20px;border-radius:8px;font-size:.82rem;font-weight:600;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:6px}
+  .btn:hover{background:#4338ca;box-shadow:0 4px 12px rgba(79,70,229,.3)}
+
+  /* Main layout */
+  main{padding:24px 32px;max-width:1400px;margin:0 auto}
+
+  /* Stat cards */
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:24px}
+  .stat{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px 24px;box-shadow:0 1px 4px rgba(0,0,0,.05);transition:box-shadow .2s}
+  .stat:hover{box-shadow:0 4px 12px rgba(0,0,0,.08)}
+  .stat .lbl{color:var(--muted);font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;font-weight:600;margin-bottom:8px}
+  .stat .val{font-size:2rem;font-weight:800;color:var(--text);line-height:1}
+  .stat .hint{font-size:.75rem;color:var(--muted);margin-top:6px}
+  .stat.accent-card{border-left:3px solid var(--accent)}
+  .stat.green-card{border-left:3px solid var(--green)}
+
+  /* Charts */
+  .charts{display:grid;grid-template-columns:3fr 2fr;gap:16px;margin-bottom:24px}
+  .chart-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px 24px;box-shadow:0 1px 4px rgba(0,0,0,.05)}
+  .chart-card h2{font-size:.85rem;font-weight:700;color:var(--text);margin-bottom:16px;text-transform:uppercase;letter-spacing:.04em}
+
+  /* Tables */
+  .table-section{background:var(--card);border:1px solid var(--border);border-radius:12px;box-shadow:0 1px 4px rgba(0,0,0,.05);margin-bottom:16px;overflow:hidden}
+  .table-header{padding:16px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+  .table-header h2{font-size:.85rem;font-weight:700;color:var(--text);text-transform:uppercase;letter-spacing:.04em}
+  .table-count{background:var(--accent-light);color:var(--accent);font-size:.72rem;font-weight:700;padding:2px 8px;border-radius:20px}
+  table{width:100%;border-collapse:collapse}
+  th{background:var(--card2);padding:10px 20px;text-align:left;font-size:.7rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:700;white-space:nowrap;border-bottom:1px solid var(--border)}
+  td{padding:12px 20px;border-bottom:1px solid #f3f4f6;font-size:.84rem;vertical-align:middle;color:var(--text)}
+  tr:last-child td{border-bottom:none}
+  tr:hover td{background:#fafbff}
+
+  /* Bar visualization */
   .bar-wrap{display:flex;align-items:center;gap:8px}
-  .bar{height:5px;border-radius:3px;background:var(--accent);min-width:2px}
-  .pill{display:inline-block;padding:2px 10px;border-radius:20px;font-size:.7rem;font-weight:600;background:rgba(99,102,241,.15);color:var(--accent)}
-  #loading{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:14px;z-index:100}
-  #loading p{color:var(--muted);font-size:.9rem}
-  .spin{width:34px;height:34px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite}
+  .bar-track{height:6px;border-radius:3px;background:#e5e7eb;flex:1;max-width:100px}
+  .bar-fill{height:6px;border-radius:3px;background:var(--accent)}
+  .pct-label{color:var(--muted);font-size:.75rem;white-space:nowrap;min-width:36px}
+
+  /* Pills */
+  .pill{display:inline-block;padding:2px 10px;border-radius:20px;font-size:.68rem;font-weight:700}
+  .pill.admin{background:var(--amber-light);color:var(--amber)}
+  .pill.member{background:var(--accent-light);color:var(--accent)}
+
+  /* Avatar */
+  .avatar{width:30px;height:30px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:.65rem;font-weight:800;color:#fff;margin-right:10px;flex-shrink:0}
+  .name-cell{display:flex;align-items:center}
+  .name-cell .info{display:flex;flex-direction:column;gap:2px}
+  .name-cell .nm{font-weight:700;color:var(--text)}
+
+  /* Cost highlight */
+  .cost-val{font-weight:800;color:var(--text);font-size:.9rem}
+  .cost-secondary{color:var(--muted);font-size:.8rem}
+
+  /* Loading */
+  #loading{position:fixed;inset:0;background:rgba(240,242,247,.95);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px;z-index:100}
+  #loading p{color:var(--muted);font-size:.9rem;font-weight:500}
+  .spin{width:36px;height:36px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite}
   @keyframes spin{to{transform:rotate(360deg)}}
-  .err{background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.3);border-radius:8px;padding:12px 16px;margin:14px 28px;color:#fca5a5;font-size:.83rem;display:none}
-  @media(max-width:700px){.charts{grid-template-columns:1fr}}
+
+  /* Alerts */
+  .alert{border-radius:10px;padding:12px 18px;margin-bottom:16px;font-size:.83rem;line-height:1.5;display:none}
+  .alert.error{background:#fef2f2;border:1px solid #fecaca;color:#b91c1c}
+  .alert.info{background:var(--accent-light);border:1px solid #c7d2fe;color:#3730a3}
+  .alert.warn{background:var(--amber-light);border:1px solid #fde68a;color:#92400e}
+
+  @media(max-width:768px){
+    main{padding:16px}
+    .charts{grid-template-columns:1fr}
+    header{padding:12px 16px}
+  }
 </style>
 </head>
 <body>
@@ -44,42 +108,94 @@
 <div id="loading"><div class="spin"></div><p id="load-msg">Loading usage data…</p></div>
 
 <header>
-  <div>
-    <h1>🚀 BrandStar — Claude Usage</h1>
-    <div class="sub" id="updated-at">–</div>
+  <div class="header-left">
+    <div>
+      <div class="logo">BrandStar <span>Claude</span> Usage</div>
+      <div class="sub" id="updated-at">–</div>
+    </div>
+    <span class="badge">30-DAY VIEW</span>
   </div>
   <button class="btn" onclick="loadAll()">↻ Refresh</button>
 </header>
 
-<div id="err" class="err"></div>
+<main>
+  <div id="err" class="alert error"></div>
+  <div id="notice" class="alert info"></div>
+  <div id="warn" class="alert warn"></div>
 
-<div class="stats">
-  <div class="stat"><div class="lbl">Est. Total Spend (30d)</div><div class="val" id="s-cost">—</div><div class="hint">token-based estimate</div></div>
-  <div class="stat"><div class="lbl">Team Members</div><div class="val" id="s-members">—</div><div class="hint">in your org</div></div>
-  <div class="stat"><div class="lbl">Total Tokens (30d)</div><div class="val" id="s-tokens">—</div><div class="hint">input + output</div></div>
-  <div class="stat"><div class="lbl">Top Model</div><div class="val" id="s-model" style="font-size:1rem;margin-top:8px">—</div><div class="hint" id="s-model-cost">–</div></div>
-</div>
+  <div class="stats">
+    <div class="stat accent-card">
+      <div class="lbl">Est. Total Spend (30d)</div>
+      <div class="val" id="s-cost">—</div>
+      <div class="hint">token-based estimate</div>
+    </div>
+    <div class="stat">
+      <div class="lbl">Active Members</div>
+      <div class="val" id="s-members">—</div>
+      <div class="hint" id="s-members-hint">with usage this period</div>
+    </div>
+    <div class="stat">
+      <div class="lbl">Total Tokens (30d)</div>
+      <div class="val" id="s-tokens">—</div>
+      <div class="hint">input + output combined</div>
+    </div>
+    <div class="stat green-card">
+      <div class="lbl">Top Spender</div>
+      <div class="val" id="s-top" style="font-size:1.1rem;margin-top:4px">—</div>
+      <div class="hint" id="s-top-cost">–</div>
+    </div>
+  </div>
 
-<div class="charts">
-  <div class="chart-card"><h2>Daily Estimated Cost — Last 30 Days</h2><canvas id="daily-chart" height="95"></canvas></div>
-  <div class="chart-card"><h2>Spend by Model</h2><canvas id="model-chart" height="160"></canvas></div>
-</div>
+  <div class="charts">
+    <div class="chart-card">
+      <h2>Daily Spend — Last 30 Days</h2>
+      <canvas id="daily-chart" height="85"></canvas>
+    </div>
+    <div class="chart-card">
+      <h2>Top Spenders (30d)</h2>
+      <canvas id="member-chart" height="160"></canvas>
+    </div>
+  </div>
 
-<div class="table-section">
-  <h2>Cost by Model (30 days)</h2>
-  <table>
-    <thead><tr><th>Model</th><th>Est. Cost</th><th>Input Tokens</th><th>Output Tokens</th><th>Share</th></tr></thead>
-    <tbody id="model-tbody"></tbody>
-  </table>
-</div>
+  <div class="table-section">
+    <div class="table-header">
+      <h2>Spend by Team Member</h2>
+      <span class="table-count" id="member-count">30 days</span>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>Member</th>
+          <th>Role</th>
+          <th>Est. Cost</th>
+          <th>Input Tokens</th>
+          <th>Output Tokens</th>
+          <th>Share of Spend</th>
+        </tr>
+      </thead>
+      <tbody id="member-tbody"></tbody>
+    </table>
+  </div>
 
-<div class="table-section" style="padding-top:0">
-  <h2>Team Members</h2>
-  <table>
-    <thead><tr><th>Name</th><th>Email</th><th>Role</th></tr></thead>
-    <tbody id="members-tbody"></tbody>
-  </table>
-</div>
+  <div class="table-section">
+    <div class="table-header">
+      <h2>Spend by Model</h2>
+      <span class="table-count" id="model-count">30 days</span>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>Model</th>
+          <th>Est. Cost</th>
+          <th>Input Tokens</th>
+          <th>Output Tokens</th>
+          <th>Share of Spend</th>
+        </tr>
+      </thead>
+      <tbody id="model-tbody"></tbody>
+    </table>
+  </div>
+</main>
 
 <script>
 async function api(path, params = {}) {
@@ -114,7 +230,7 @@ function fmt(n) {
   if (n >= 1e9) return (n/1e9).toFixed(1)+'B';
   if (n >= 1e6) return (n/1e6).toFixed(1)+'M';
   if (n >= 1e3) return (n/1e3).toFixed(1)+'K';
-  return ''+n;
+  return n === 0 ? '0' : ''+n;
 }
 function shortModel(m) {
   if (!m) return 'Unknown';
@@ -123,114 +239,217 @@ function shortModel(m) {
   if (m.includes('haiku'))  return 'Claude Haiku';
   return m.split('-').slice(0,3).join('-');
 }
+function initials(name) {
+  if (!name || name === '—') return '?';
+  return name.trim().split(/\s+/).map(w => w[0]).slice(0,2).join('').toUpperCase();
+}
+const COLORS = ['#4f46e5','#7c3aed','#db2777','#d97706','#059669','#0284c7','#dc2626','#65a30d'];
+function avatarColor(str) {
+  let h = 0; for (const c of (str||'')) h = (h*31 + c.charCodeAt(0)) & 0xffffffff;
+  return COLORS[Math.abs(h) % COLORS.length];
+}
 
 let dc = null, mc = null;
 
 async function loadAll() {
   document.getElementById('loading').style.display = 'flex';
-  document.getElementById('err').style.display = 'none';
+  ['err','notice','warn'].forEach(id => { document.getElementById(id).style.display = 'none'; });
+
   try {
+    // 1. Members
     setMsg('Fetching team members…');
     let members = [];
     try {
-      const mResp = await api('/v1/organizations/users', { limit: 100 });
-      members = mResp.data || [];
-    } catch(_) {}
+      const r = await api('/v1/organizations/users', { limit: 100 });
+      members = r.data || [];
+      console.log('Members:', members.length, members);
+    } catch(e) { console.warn('Members fetch failed:', e.message); }
+    const memberMap = {};
+    members.forEach(m => { if (m.id) memberMap[m.id] = m; });
 
-    setMsg('Pulling 30-day usage…');
-    const uResp = await api('/v1/organizations/usage_report/messages', {
-      starting_at: daysAgo(30),
-      ending_at:   daysAgo(0),
-      bucket_width: '1d',
-      'group_by[]': ['model'],
+    // 2. Usage by model (daily trend + model breakdown)
+    setMsg('Pulling usage data…');
+    const modelResp = await api('/v1/organizations/usage_report/messages', {
+      starting_at: daysAgo(30), ending_at: daysAgo(0),
+      bucket_width: '1d', 'group_by[]': ['model'],
     });
+    console.log('Model usage rows:', (modelResp.data||[]).length, modelResp.data?.[0]);
 
-    // Process: by day and by model
-    const byDay   = {};
-    const byModel = {};
+    // 3. Usage by account_id (per-member)
+    setMsg('Pulling per-member usage…');
+    let memberResp = null;
+    try {
+      memberResp = await api('/v1/organizations/usage_report/messages', {
+        starting_at: daysAgo(30), ending_at: daysAgo(0),
+        bucket_width: '1d', 'group_by[]': ['account_id'],
+      });
+      console.log('Account usage rows:', (memberResp.data||[]).length, memberResp.data?.[0]);
+    } catch(e) { console.warn('Per-account usage failed:', e.message); }
 
-    (uResp.data || []).forEach(b => {
-      const day   = (b.start_time || '').slice(0, 10);
+    // --- Process model data ---
+    const byDay = {}, byModel = {};
+    let totalInTok = 0, totalOutTok = 0;
+    (modelResp.data || []).forEach(b => {
+      const day = (b.start_time||'').slice(0,10);
       const model = shortModel(b.model);
-      const inTok = b.input_tokens  || 0;
-      const outTok= b.output_tokens || 0;
+      const inTok = b.input_tokens || 0;
+      const outTok = b.output_tokens || 0;
       const cache = b.cache_read_input_tokens || 0;
-      const c     = modelCost(b.model, inTok, outTok, cache);
-
-      if (day)   byDay[day]     = (byDay[day] || 0) + c;
-      if (!byModel[model]) byModel[model] = { cost: 0, inTok: 0, outTok: 0 };
-      byModel[model].cost  += c;
-      byModel[model].inTok += inTok;
-      byModel[model].outTok+= outTok;
+      const c = modelCost(b.model, inTok, outTok, cache);
+      totalInTok += inTok; totalOutTok += outTok;
+      if (day) byDay[day] = (byDay[day]||0) + c;
+      if (!byModel[model]) byModel[model] = {cost:0, inTok:0, outTok:0};
+      byModel[model].cost += c; byModel[model].inTok += inTok; byModel[model].outTok += outTok;
     });
+    const totalCost = Object.values(byModel).reduce((s,v)=>s+v.cost, 0);
+    const totalTok = totalInTok + totalOutTok;
 
-    const totalCost = Object.values(byModel).reduce((s, v) => s + v.cost, 0);
-    const totalTok  = Object.values(byModel).reduce((s, v) => s + v.inTok + v.outTok, 0);
-    const topModel  = Object.entries(byModel).sort((a,b) => b[1].cost - a[1].cost)[0];
+    // Blended cost rate for per-user estimates
+    const blendedI = totalInTok > 0 ? (totalCost * 0.25 / (totalInTok/1e6 + 0.001)) : 3.0;
+    const blendedO = totalOutTok > 0 ? (totalCost * 0.75 / (totalOutTok/1e6 + 0.001)) : 15.0;
 
-    // Stats
-    document.getElementById('s-cost').textContent    = '$' + totalCost.toFixed(2);
-    document.getElementById('s-members').textContent = members.length || '—';
-    document.getElementById('s-tokens').textContent  = fmt(totalTok);
-    if (topModel) {
-      document.getElementById('s-model').textContent      = topModel[0];
-      document.getElementById('s-model-cost').textContent = '$' + topModel[1].cost.toFixed(2) + ' (30d)';
+    // --- Process per-member data ---
+    const byMember = {};
+    (memberResp?.data || []).forEach(b => {
+      const aid = b.account_id || '__unknown__';
+      const inTok = b.input_tokens || 0;
+      const outTok = b.output_tokens || 0;
+      const cache = b.cache_read_input_tokens || 0;
+      const c = (inTok/1e6)*blendedI + (outTok/1e6)*blendedO + (cache/1e6)*blendedI*0.1;
+      if (!byMember[aid]) byMember[aid] = {cost:0, inTok:0, outTok:0};
+      byMember[aid].cost += c; byMember[aid].inTok += inTok; byMember[aid].outTok += outTok;
+    });
+    const memberEntries = Object.entries(byMember).sort((a,b)=>b[1].cost-a[1].cost);
+    const activeMemberCount = memberEntries.filter(([,v])=>v.cost>0).length;
+
+    // Top spender
+    const topEntry = memberEntries[0];
+    const topMember = topEntry ? (memberMap[topEntry[0]]||null) : null;
+    const topName = topMember?.name || topMember?.email || (topEntry?'Unknown':'—');
+
+    // --- Stats ---
+    document.getElementById('s-cost').textContent = '$' + totalCost.toFixed(2);
+    document.getElementById('s-members').textContent = activeMemberCount || members.length || '—';
+    document.getElementById('s-members-hint').textContent = activeMemberCount > 0 ? 'with usage this period' : 'team members in org';
+    document.getElementById('s-tokens').textContent = fmt(totalTok);
+    document.getElementById('s-top').textContent = topName;
+    document.getElementById('s-top-cost').textContent = topEntry ? '$'+topEntry[1].cost.toFixed(2)+' this period' : '–';
+    document.getElementById('updated-at').textContent = 'Last updated ' + new Date().toLocaleTimeString();
+
+    // Warning if no data
+    if (totalTok === 0) {
+      show('warn', '⚠ No token usage found for the last 30 days. This dashboard tracks direct Anthropic API usage. If your team uses Claude.ai through the web or desktop app under a managed plan, usage may be reported separately in your claude.ai admin settings.');
     }
-    document.getElementById('updated-at').textContent = 'Updated ' + new Date().toLocaleTimeString();
+    if (memberEntries.length === 0 && totalTok > 0) {
+      show('notice', 'ℹ Per-member breakdown is not available — try grouping by workspace or model instead. Showing totals only.');
+    }
 
-    // Daily chart
-    const days   = Object.keys(byDay).sort();
-    const vals   = days.map(d => +byDay[d].toFixed(4));
+    // --- Daily chart ---
+    const days = Object.keys(byDay).sort();
+    const vals = days.map(d => +byDay[d].toFixed(4));
     if (dc) dc.destroy();
     dc = new Chart(document.getElementById('daily-chart'), {
       type: 'bar',
-      data: { labels: days, datasets: [{ data: vals, backgroundColor: 'rgba(99,102,241,.65)', borderColor: '#6366f1', borderWidth: 1, borderRadius: 3 }] },
+      data: { labels: days.map(d=>d.slice(5)), datasets: [{
+        data: vals, backgroundColor: '#e0e7ff', borderColor: '#4f46e5',
+        borderWidth: 1.5, borderRadius: 4, hoverBackgroundColor: '#4f46e5'
+      }]},
       options: { responsive: true, plugins: { legend: { display: false } }, scales: {
-        x: { ticks: { color: '#8892a4', maxTicksLimit: 12, maxRotation: 45 }, grid: { color: '#1e2235' } },
-        y: { ticks: { color: '#8892a4', callback: v => '$' + v.toFixed(2) }, grid: { color: '#1e2235' } }
+        x: { ticks: { color: '#6b7280', maxTicksLimit: 15, maxRotation: 45, font:{size:11} }, grid: { color: '#f3f4f6' } },
+        y: { ticks: { color: '#6b7280', callback: v => '$'+v.toFixed(2), font:{size:11} }, grid: { color: '#f3f4f6' } }
       }}
     });
 
-    // Model donut
-    const COLORS = ['#6366f1','#8b5cf6','#ec4899','#f59e0b','#10b981','#06b6d4'];
-    const modelEntries = Object.entries(byModel).sort((a,b) => b[1].cost - a[1].cost);
+    // --- Top spenders bar ---
+    const top8 = memberEntries.slice(0,8);
+    const chartLabels = top8.map(([aid]) => {
+      const m = memberMap[aid];
+      const n = m?.name || m?.email || aid;
+      return n.split(' ')[0]; // first name only for chart
+    });
+    const chartVals = top8.map(([,v]) => +v.cost.toFixed(2));
     if (mc) mc.destroy();
-    mc = new Chart(document.getElementById('model-chart'), {
-      type: 'doughnut',
-      data: { labels: modelEntries.map(([k]) => k), datasets: [{ data: modelEntries.map(([,v]) => +v.cost.toFixed(4)), backgroundColor: COLORS, borderWidth: 0 }] },
-      options: { responsive: true, plugins: { legend: { position: 'right', labels: { color: '#8892a4', boxWidth: 11, padding: 8, font: { size: 11 } } } } }
+    mc = new Chart(document.getElementById('member-chart'), {
+      type: 'bar',
+      data: { labels: chartLabels, datasets: [{
+        data: chartVals,
+        backgroundColor: top8.map(([aid])=>{ const m=memberMap[aid]; return avatarColor((m?.name||m?.email||aid)+'x'); }),
+        borderWidth: 0, borderRadius: 4
+      }]},
+      options: {
+        indexAxis: 'y', responsive: true,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { ticks: { color: '#6b7280', callback: v=>'$'+v, font:{size:11} }, grid: { color: '#f3f4f6' } },
+          y: { ticks: { color: '#374151', font:{size:11, weight:'600'} }, grid: { display:false } }
+        }
+      }
     });
 
-    // Model table
+    // --- Member table ---
+    const mTbody = document.getElementById('member-tbody');
+    document.getElementById('member-count').textContent = memberEntries.length + ' members';
+    if (memberEntries.length > 0) {
+      mTbody.innerHTML = memberEntries.map(([aid, v], i) => {
+        const m = memberMap[aid];
+        const name = m?.name || '—';
+        const email = m?.email || aid;
+        const role = m?.role || 'member';
+        const pct = totalCost > 0 ? (v.cost/totalCost*100).toFixed(1) : '0';
+        const barPct = memberEntries[0][1].cost > 0 ? Math.round(v.cost/memberEntries[0][1].cost*100) : 0;
+        const color = avatarColor(name+email);
+        return `<tr>
+          <td>
+            <div class="name-cell">
+              <div class="avatar" style="background:${color}">${initials(name)}</div>
+              <div class="info"><span class="nm">${name}</span><span style="color:var(--muted);font-size:.75rem">${email}</span></div>
+            </div>
+          </td>
+          <td><span class="pill ${role==='admin'?'admin':'member'}">${role}</span></td>
+          <td><span class="cost-val">$${v.cost.toFixed(2)}</span></td>
+          <td class="cost-secondary">${fmt(v.inTok)}</td>
+          <td class="cost-secondary">${fmt(v.outTok)}</td>
+          <td>
+            <div class="bar-wrap">
+              <div class="bar-track"><div class="bar-fill" style="width:${barPct}%"></div></div>
+              <span class="pct-label">${pct}%</span>
+            </div>
+          </td>
+        </tr>`;
+      }).join('');
+    } else {
+      mTbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:24px;color:var(--muted)">No per-member data available — check the Model breakdown below for total usage.</td></tr>`;
+    }
+
+    // --- Model table ---
+    const modelEntries = Object.entries(byModel).sort((a,b)=>b[1].cost-a[1].cost);
+    document.getElementById('model-count').textContent = modelEntries.length + ' models';
     document.getElementById('model-tbody').innerHTML = modelEntries.map(([name, v]) => {
-      const pct  = totalCost > 0 ? (v.cost / totalCost * 100).toFixed(1) : '0';
-      const barW = modelEntries[0][1].cost > 0 ? Math.round(v.cost / modelEntries[0][1].cost * 100) : 0;
+      const pct = totalCost > 0 ? (v.cost/totalCost*100).toFixed(1) : '0';
+      const barPct = modelEntries[0][1].cost > 0 ? Math.round(v.cost/modelEntries[0][1].cost*100) : 0;
       return `<tr>
         <td><strong>${name}</strong></td>
-        <td><strong>$${v.cost.toFixed(2)}</strong></td>
-        <td style="color:var(--muted)">${fmt(v.inTok)}</td>
-        <td style="color:var(--muted)">${fmt(v.outTok)}</td>
-        <td><div class="bar-wrap"><div class="bar" style="width:${barW}px;max-width:80px"></div><span style="color:var(--muted)">${pct}%</span></div></td>
+        <td><span class="cost-val">$${v.cost.toFixed(2)}</span></td>
+        <td class="cost-secondary">${fmt(v.inTok)}</td>
+        <td class="cost-secondary">${fmt(v.outTok)}</td>
+        <td>
+          <div class="bar-wrap">
+            <div class="bar-track"><div class="bar-fill" style="width:${barPct}%"></div></div>
+            <span class="pct-label">${pct}%</span>
+          </div>
+        </td>
       </tr>`;
     }).join('');
 
-    // Members table
-    document.getElementById('members-tbody').innerHTML = members.length
-      ? members.map(u => `<tr>
-          <td><strong>${u.name || '—'}</strong></td>
-          <td style="color:var(--muted)">${u.email || ''}</td>
-          <td><span class="pill">${u.role || 'member'}</span></td>
-        </tr>`).join('')
-      : '<tr><td colspan="3" style="color:var(--muted);text-align:center;padding:20px">Member list not available for this API key scope</td></tr>';
-
-  } catch (e) {
-    document.getElementById('err').style.display = 'block';
-    document.getElementById('err').textContent = '⚠ ' + e.message;
+  } catch(e) {
+    show('err', '⚠ ' + e.message);
+    console.error('Dashboard error:', e);
   }
   document.getElementById('loading').style.display = 'none';
 }
 
 function setMsg(t) { document.getElementById('load-msg').textContent = t; }
+function show(id, msg) { const el=document.getElementById(id); el.style.display='block'; el.textContent=msg; }
 loadAll();
 </script>
 </body>

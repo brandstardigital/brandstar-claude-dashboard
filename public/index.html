@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BrandStar — Claude Usage</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  :root{--bg:#0f1117;--card:#1a1d2e;--card2:#12152a;--border:#2a2d3e;--text:#e2e8f0;--muted:#8892a4;--accent:#6366f1;--green:#10b981;--amber:#f59e0b;--red:#ef4444}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;min-height:100vh}
+  header{padding:20px 28px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px}
+  header h1{font-size:1.15rem;font-weight:700}
+  .sub{color:var(--muted);font-size:0.8rem;margin-top:3px}
+  .btn{background:var(--accent);color:#fff;border:none;padding:8px 18px;border-radius:6px;font-size:0.82rem;font-weight:600;cursor:pointer;transition:opacity .2s}
+  .btn:hover{opacity:.85}
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;padding:20px 28px 0}
+  .stat{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:18px 20px}
+  .stat .lbl{color:var(--muted);font-size:.7rem;text-transform:uppercase;letter-spacing:.05em}
+  .stat .val{font-size:1.8rem;font-weight:700;margin-top:5px;line-height:1}
+  .stat .hint{font-size:.75rem;color:var(--muted);margin-top:5px}
+  .charts{display:grid;grid-template-columns:2fr 1fr;gap:14px;padding:14px 28px}
+  .chart-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:18px 20px}
+  .chart-card h2{font-size:.85rem;font-weight:600;margin-bottom:14px}
+  .table-section{padding:0 28px 28px}
+  .table-section h2{font-size:.85rem;font-weight:600;margin-bottom:10px}
+  table{width:100%;border-collapse:collapse;background:var(--card);border:1px solid var(--border);border-radius:10px;overflow:hidden}
+  th{background:var(--card2);padding:11px 16px;text-align:left;font-size:.7rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);white-space:nowrap}
+  td{padding:11px 16px;border-top:1px solid var(--border);font-size:.84rem;vertical-align:middle}
+  tr:hover td{background:#1e2235}
+  .bar-wrap{display:flex;align-items:center;gap:8px}
+  .bar{height:5px;border-radius:3px;background:var(--accent);min-width:2px}
+  .pill{display:inline-block;padding:2px 10px;border-radius:20px;font-size:.7rem;font-weight:600;background:rgba(99,102,241,.15);color:var(--accent)}
+  #loading{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:14px;z-index:100}
+  #loading p{color:var(--muted);font-size:.9rem}
+  .spin{width:34px;height:34px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .err{background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.3);border-radius:8px;padding:12px 16px;margin:14px 28px;color:#fca5a5;font-size:.83rem;display:none}
+  @media(max-width:700px){.charts{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<div id="loading"><div class="spin"></div><p id="load-msg">Loading usage data…</p></div>
+
+<header>
+  <div>
+    <h1>🚀 BrandStar — Claude Usage</h1>
+    <div class="sub" id="updated-at">–</div>
+  </div>
+  <button class="btn" onclick="loadAll()">↻ Refresh</button>
+</header>
+
+<div id="err" class="err"></div>
+
+<div class="stats">
+  <div class="stat"><div class="lbl">Est. Total Spend (30d)</div><div class="val" id="s-cost">—</div><div class="hint">token-based estimate</div></div>
+  <div class="stat"><div class="lbl">Team Members</div><div class="val" id="s-members">—</div><div class="hint">in your org</div></div>
+  <div class="stat"><div class="lbl">Total Tokens (30d)</div><div class="val" id="s-tokens">—</div><div class="hint">input + output</div></div>
+  <div class="stat"><div class="lbl">Top Model</div><div class="val" id="s-model" style="font-size:1rem;margin-top:8px">—</div><div class="hint" id="s-model-cost">–</div></div>
+</div>
+
+<div class="charts">
+  <div class="chart-card"><h2>Daily Estimated Cost — Last 30 Days</h2><canvas id="daily-chart" height="95"></canvas></div>
+  <div class="chart-card"><h2>Spend by Model</h2><canvas id="model-chart" height="160"></canvas></div>
+</div>
+
+<div class="table-section">
+  <h2>Cost by Model (30 days)</h2>
+  <table>
+    <thead><tr><th>Model</th><th>Est. Cost</th><th>Input Tokens</th><th>Output Tokens</th><th>Share</th></tr></thead>
+    <tbody id="model-tbody"></tbody>
+  </table>
+</div>
+
+<div class="table-section" style="padding-top:0">
+  <h2>Team Members</h2>
+  <table>
+    <thead><tr><th>Name</th><th>Email</th><th>Role</th></tr></thead>
+    <tbody id="members-tbody"></tbody>
+  </table>
+</div>
+
+<script>
+async function api(path, params = {}) {
+  const url = new URL('/api/proxy', window.location.origin);
+  url.searchParams.set('_path', path);
+  Object.entries(params).forEach(([k, v]) => {
+    if (Array.isArray(v)) v.forEach(i => url.searchParams.append(k, i));
+    else url.searchParams.set(k, v);
+  });
+  const r = await fetch(url.toString());
+  if (!r.ok) { const t = await r.text(); throw new Error(`${r.status}: ${t}`); }
+  return r.json();
+}
+
+function daysAgo(n) {
+  const d = new Date(); d.setDate(d.getDate() - n);
+  return d.toISOString().slice(0, 19) + 'Z';
+}
+
+const PRICE = {
+  haiku:  { i: 0.8,  o: 4.0  },
+  sonnet: { i: 3.0,  o: 15.0 },
+  opus:   { i: 15.0, o: 75.0 },
+  def:    { i: 3.0,  o: 15.0 },
+};
+function modelCost(model, inTok, outTok, cache) {
+  const m = (model || '').toLowerCase();
+  const p = m.includes('haiku') ? PRICE.haiku : m.includes('opus') ? PRICE.opus : m.includes('sonnet') ? PRICE.sonnet : PRICE.def;
+  return (inTok / 1e6) * p.i + (outTok / 1e6) * p.o + (cache / 1e6) * p.i * 0.1;
+}
+function fmt(n) {
+  if (n >= 1e9) return (n/1e9).toFixed(1)+'B';
+  if (n >= 1e6) return (n/1e6).toFixed(1)+'M';
+  if (n >= 1e3) return (n/1e3).toFixed(1)+'K';
+  return ''+n;
+}
+function shortModel(m) {
+  if (!m) return 'Unknown';
+  if (m.includes('opus'))   return 'Claude Opus';
+  if (m.includes('sonnet')) return 'Claude Sonnet';
+  if (m.includes('haiku'))  return 'Claude Haiku';
+  return m.split('-').slice(0,3).join('-');
+}
+
+let dc = null, mc = null;
+
+async function loadAll() {
+  document.getElementById('loading').style.display = 'flex';
+  document.getElementById('err').style.display = 'none';
+  try {
+    setMsg('Fetching team members…');
+    let members = [];
+    try {
+      const mResp = await api('/v1/organizations/users', { limit: 100 });
+      members = mResp.data || [];
+    } catch(_) {}
+
+    setMsg('Pulling 30-day usage…');
+    const uResp = await api('/v1/organizations/usage_report/messages', {
+      starting_at: daysAgo(30),
+      ending_at:   daysAgo(0),
+      bucket_width: '1d',
+      'group_by[]': ['model'],
+    });
+
+    // Process: by day and by model
+    const byDay   = {};
+    const byModel = {};
+
+    (uResp.data || []).forEach(b => {
+      const day   = (b.start_time || '').slice(0, 10);
+      const model = shortModel(b.model);
+      const inTok = b.input_tokens  || 0;
+      const outTok= b.output_tokens || 0;
+      const cache = b.cache_read_input_tokens || 0;
+      const c     = modelCost(b.model, inTok, outTok, cache);
+
+      if (day)   byDay[day]     = (byDay[day] || 0) + c;
+      if (!byModel[model]) byModel[model] = { cost: 0, inTok: 0, outTok: 0 };
+      byModel[model].cost  += c;
+      byModel[model].inTok += inTok;
+      byModel[model].outTok+= outTok;
+    });
+
+    const totalCost = Object.values(byModel).reduce((s, v) => s + v.cost, 0);
+    const totalTok  = Object.values(byModel).reduce((s, v) => s + v.inTok + v.outTok, 0);
+    const topModel  = Object.entries(byModel).sort((a,b) => b[1].cost - a[1].cost)[0];
+
+    // Stats
+    document.getElementById('s-cost').textContent    = '$' + totalCost.toFixed(2);
+    document.getElementById('s-members').textContent = members.length || '—';
+    document.getElementById('s-tokens').textContent  = fmt(totalTok);
+    if (topModel) {
+      document.getElementById('s-model').textContent      = topModel[0];
+      document.getElementById('s-model-cost').textContent = '$' + topModel[1].cost.toFixed(2) + ' (30d)';
+    }
+    document.getElementById('updated-at').textContent = 'Updated ' + new Date().toLocaleTimeString();
+
+    // Daily chart
+    const days   = Object.keys(byDay).sort();
+    const vals   = days.map(d => +byDay[d].toFixed(4));
+    if (dc) dc.destroy();
+    dc = new Chart(document.getElementById('daily-chart'), {
+      type: 'bar',
+      data: { labels: days, datasets: [{ data: vals, backgroundColor: 'rgba(99,102,241,.65)', borderColor: '#6366f1', borderWidth: 1, borderRadius: 3 }] },
+      options: { responsive: true, plugins: { legend: { display: false } }, scales: {
+        x: { ticks: { color: '#8892a4', maxTicksLimit: 12, maxRotation: 45 }, grid: { color: '#1e2235' } },
+        y: { ticks: { color: '#8892a4', callback: v => '$' + v.toFixed(2) }, grid: { color: '#1e2235' } }
+      }}
+    });
+
+    // Model donut
+    const COLORS = ['#6366f1','#8b5cf6','#ec4899','#f59e0b','#10b981','#06b6d4'];
+    const modelEntries = Object.entries(byModel).sort((a,b) => b[1].cost - a[1].cost);
+    if (mc) mc.destroy();
+    mc = new Chart(document.getElementById('model-chart'), {
+      type: 'doughnut',
+      data: { labels: modelEntries.map(([k]) => k), datasets: [{ data: modelEntries.map(([,v]) => +v.cost.toFixed(4)), backgroundColor: COLORS, borderWidth: 0 }] },
+      options: { responsive: true, plugins: { legend: { position: 'right', labels: { color: '#8892a4', boxWidth: 11, padding: 8, font: { size: 11 } } } } }
+    });
+
+    // Model table
+    document.getElementById('model-tbody').innerHTML = modelEntries.map(([name, v]) => {
+      const pct  = totalCost > 0 ? (v.cost / totalCost * 100).toFixed(1) : '0';
+      const barW = modelEntries[0][1].cost > 0 ? Math.round(v.cost / modelEntries[0][1].cost * 100) : 0;
+      return `<tr>
+        <td><strong>${name}</strong></td>
+        <td><strong>$${v.cost.toFixed(2)}</strong></td>
+        <td style="color:var(--muted)">${fmt(v.inTok)}</td>
+        <td style="color:var(--muted)">${fmt(v.outTok)}</td>
+        <td><div class="bar-wrap"><div class="bar" style="width:${barW}px;max-width:80px"></div><span style="color:var(--muted)">${pct}%</span></div></td>
+      </tr>`;
+    }).join('');
+
+    // Members table
+    document.getElementById('members-tbody').innerHTML = members.length
+      ? members.map(u => `<tr>
+          <td><strong>${u.name || '—'}</strong></td>
+          <td style="color:var(--muted)">${u.email || ''}</td>
+          <td><span class="pill">${u.role || 'member'}</span></td>
+        </tr>`).join('')
+      : '<tr><td colspan="3" style="color:var(--muted);text-align:center;padding:20px">Member list not available for this API key scope</td></tr>';
+
+  } catch (e) {
+    document.getElementById('err').style.display = 'block';
+    document.getElementById('err').textContent = '⚠ ' + e.message;
+  }
+  document.getElementById('loading').style.display = 'none';
+}
+
+function setMsg(t) { document.getElementById('load-msg').textContent = t; }
+loadAll();
+</script>
+</body>
+</html>

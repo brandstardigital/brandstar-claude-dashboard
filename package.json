@@ -1,0 +1,6 @@
+{
+  "name": "brandstar-claude-dashboard",
+  "version": "1.0.0",
+  "description": "BrandStar Claude usage dashboard",
+  "engines": { "node": ">=18" }
+}
